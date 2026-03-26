@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS para n8n — Aprende JavaScript Práctico</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg-primary:#0a0e17;--bg-secondary:#111827;--bg-card:#1a2234;--bg-code:#0d1117;--accent:#ff6b2b;--accent-glow:rgba(255,107,43,.15);--accent-2:#22d3ee;--accent-2-glow:rgba(34,211,238,.15);--green:#34d399;--red:#f87171;--yellow:#fbbf24;--text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#64748b;--border:#1e293b;--border-hover:#334155}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+.header{padding:1.5rem 1.5rem .75rem;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.header::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 50% 80%,var(--accent-glow) 0%,transparent 50%),radial-gradient(circle at 30% 20%,var(--accent-2-glow) 0%,transparent 40%);animation:hp 8s ease-in-out infinite alternate}
+@keyframes hp{0%{opacity:.5}100%{opacity:1}}
+.header h1{font-size:clamp(1.6rem,5vw,2.8rem);font-weight:900;position:relative;letter-spacing:-.02em}
+.header h1 .js{color:var(--yellow)}.header h1 .n8n{color:var(--accent)}
+.header p{color:var(--text-secondary);font-size:clamp(.8rem,2vw,1rem);margin-top:.3rem;position:relative;font-weight:300}
+.settings-bar{display:flex;gap:.5rem;padding:.6rem 1.5rem;background:var(--bg-secondary);border-bottom:1px solid var(--border);align-items:center;flex-wrap:wrap}
+.settings-bar label{font-size:.78rem;color:var(--text-muted);font-weight:500}
+.api-input-group{display:flex;gap:.35rem;flex:1;min-width:180px}
+.api-input{flex:1;padding:.35rem .6rem;background:var(--bg-code);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:.75rem;outline:none}
+.api-input:focus{border-color:var(--accent)}.api-input::placeholder{color:var(--text-muted)}
+.model-select{padding:.35rem .5rem;background:var(--bg-code);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-family:'Outfit',sans-serif;font-size:.78rem;outline:none;cursor:pointer;min-width:130px}
+.btn-save-api{padding:.35rem .7rem;background:var(--accent);border:none;border-radius:6px;color:#fff;font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-save-api:hover{background:#e55a1b}
+.api-status{font-size:.72rem;padding:.15rem .4rem;border-radius:4px;white-space:nowrap}
+.api-status.saved{color:var(--green)}.api-status.missing{color:var(--red)}
+.progress-container{padding:.6rem 1.5rem;background:var(--bg-secondary);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.progress-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem;font-size:.78rem}
+.progress-label{color:var(--text-secondary)}.progress-count{color:var(--accent);font-weight:600;font-family:'JetBrains Mono',monospace}
+.progress-bar{width:100%;height:5px;background:var(--bg-primary);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1);width:0%}
+.progress-actions{display:flex;gap:.5rem;margin-top:.35rem;justify-content:flex-end}
+.btn-reset{font-size:.7rem;color:var(--text-muted);background:none;border:1px solid var(--border);padding:.15rem .5rem;border-radius:4px;cursor:pointer;font-family:'Outfit',sans-serif}
+.btn-reset:hover{color:var(--red);border-color:var(--red)}
+.nav-wrapper{display:flex;align-items:center;background:var(--bg-secondary);border-bottom:1px solid var(--border);position:relative}
+.nav-arrow{background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;flex-shrink:0;border-radius:6px;margin:0 .25rem;transition:all .2s;z-index:2;user-select:none}
+.nav-arrow:hover{color:var(--text-primary);border-color:var(--accent);background:var(--bg-secondary)}
+.nav{display:flex;gap:.35rem;padding:.6rem .5rem;overflow-x:auto;scrollbar-width:none;flex:1;scroll-behavior:smooth}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{padding:.4rem .7rem;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:500;white-space:nowrap;transition:all .3s;position:relative}
+.nav-btn:hover{border-color:var(--border-hover);color:var(--text-primary)}
+.nav-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.nav-btn.completed::after{content:'✓';position:absolute;top:-5px;right:-5px;background:var(--green);color:#000;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700}
+.lesson-container{max-width:800px;margin:0 auto;padding:1.25rem}
+.lesson{display:none}.lesson.active{display:block;animation:fi .4s ease}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.lesson-number{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem}
+.lesson h2{font-size:clamp(1.3rem,4vw,1.8rem);font-weight:700;margin-bottom:.35rem}
+.lesson-desc{color:var(--text-secondary);font-size:.92rem;line-height:1.55;font-weight:300;margin-bottom:1.25rem}
+.concept{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.15rem;margin-bottom:1.15rem;position:relative;overflow:hidden}
+.concept::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent)}
+.concept h3{font-size:1rem;font-weight:600;margin-bottom:.5rem;color:var(--accent-2)}
+.concept p{color:var(--text-secondary);line-height:1.6;font-size:.9rem}
+.concept p strong{color:var(--text-primary);font-weight:600}
+.concept p code{background:var(--bg-code);padding:.12rem .35rem;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent-2)}
+.n8n-context{background:var(--accent-glow);border:1px solid rgba(255,107,43,.2);border-radius:8px;padding:.75rem;margin-top:.75rem;font-size:.85rem}
+.n8n-context::before{content:'⚡ En n8n:';display:block;color:var(--accent);font-weight:700;margin-bottom:.2rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+.n8n-context p{color:var(--text-secondary)}
+.n8n-context code{background:rgba(0,0,0,.3);padding:.1rem .3rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--accent-2)}
+.code-block{background:var(--bg-code);border:1px solid var(--border);border-radius:10px;margin:.75rem 0;overflow:hidden}
+.code-header{display:flex;justify-content:space-between;align-items:center;padding:.4rem .75rem;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border)}
+.code-dots{display:flex;gap:5px}.code-dots span{width:8px;height:8px;border-radius:50%}
+.code-dots span:nth-child(1){background:var(--red)}.code-dots span:nth-child(2){background:var(--yellow)}.code-dots span:nth-child(3){background:var(--green)}
+.code-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text-muted)}
+.code-block pre{padding:.75rem;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.6;color:var(--text-primary)}
+.code-block .comment{color:var(--text-muted)}.code-block .keyword{color:var(--accent-2)}.code-block .string{color:var(--green)}.code-block .number{color:var(--yellow)}.code-block .function{color:var(--accent)}
+.exercise{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.15rem;margin:1.15rem 0}
+.exercise-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--yellow);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem}
+.exercise h4{font-size:.95rem;margin-bottom:.5rem}
+.exercise p{color:var(--text-secondary);font-size:.85rem;margin-bottom:.75rem;line-height:1.5}
+.exercise p code{background:var(--bg-code);padding:.1rem .3rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--accent-2)}
+.exercise p strong{color:var(--text-primary)}
+.code-input{width:100%;min-height:120px;background:var(--bg-code);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:.8rem;padding:.75rem;resize:vertical;outline:none;transition:border-color .3s;line-height:1.55;tab-size:2}
+.code-input:focus{border-color:var(--accent)}.code-input::placeholder{color:var(--text-muted)}
+.btn-row{display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap}
+.btn{padding:.5rem .9rem;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:.35rem}
+.btn-check{background:var(--accent);color:#fff}.btn-check:hover{background:#e55a1b;transform:translateY(-1px)}
+.btn-ai{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}.btn-ai:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(99,102,241,.3)}
+.btn-ai:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-ai .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:none}
+.btn-ai.loading .spinner{display:block}.btn-ai.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-hint{background:transparent;border:1px solid var(--border);color:var(--text-secondary)}.btn-hint:hover{border-color:var(--accent-2);color:var(--accent-2)}
+.btn-solution{background:transparent;border:1px solid var(--border);color:var(--text-secondary)}.btn-solution:hover{border-color:var(--yellow);color:var(--yellow)}
+.feedback{margin-top:.75rem;padding:.85rem;border-radius:8px;font-size:.85rem;line-height:1.55;display:none;animation:fi .3s ease}
+.feedback.correct{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--green);display:block}
+.feedback.incorrect{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red);display:block}
+.feedback.hint{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);color:var(--accent-2);display:block}
+.feedback.ai-response{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);color:var(--text-primary);display:block}
+.feedback.ai-response strong{color:var(--accent-2)}
+.feedback.ai-response .ai-badge{display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:.68rem;font-weight:700;padding:.12rem .45rem;border-radius:4px;margin-bottom:.4rem;letter-spacing:.05em}
+.feedback.ai-response pre{background:var(--bg-code);padding:.5rem;border-radius:6px;margin:.4rem 0;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.5}
+.btn-gen{background:linear-gradient(135deg,#059669,#10b981);color:#fff}.btn-gen:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(16,185,129,.3)}.btn-gen:disabled{opacity:.5;cursor:not-allowed;transform:none}.btn-gen .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:none}.btn-gen.loading .spinner{display:block}.btn-gen.loading .btn-text{display:none}
+.gen-zone{margin-top:1rem;animation:fi .4s ease}
+.gen-zone .gen-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem}
+.gen-zone h4{font-size:.95rem;margin-bottom:.5rem}
+.gen-zone p{color:var(--text-secondary);font-size:.85rem;margin-bottom:.75rem;line-height:1.5}
+.btn-next{width:100%;padding:.85rem;background:linear-gradient(135deg,var(--accent),#e55a1b);color:#fff;border:none;border-radius:12px;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;margin-top:1.25rem;transition:all .3s;display:none}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--accent-glow)}.btn-next.visible{display:block}
+.cheatsheet{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.15rem;margin:1.15rem 0}
+.cheatsheet h3{color:var(--yellow);font-size:.95rem;margin-bottom:.75rem}
+.cheat-item{display:flex;flex-direction:column;gap:.15rem;padding:.5rem 0;border-bottom:1px solid var(--border)}.cheat-item:last-child{border-bottom:none}
+.cheat-code{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent-2)}
+.cheat-desc{font-size:.8rem;color:var(--text-secondary)}
+.final-screen{text-align:center;padding:3rem 1.5rem}.final-screen h2{font-size:1.7rem;margin-bottom:.75rem}.final-screen .trophy{font-size:3rem;margin-bottom:.75rem}.final-screen p{color:var(--text-secondary);font-size:1rem;line-height:1.7;max-width:500px;margin:0 auto}
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:1000;padding:1rem}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.75rem;max-width:400px;width:100%;text-align:center}
+.modal h3{margin-bottom:.85rem;font-size:1.1rem}.modal p{color:var(--text-secondary);font-size:.88rem;margin-bottom:1.25rem;line-height:1.55}
+.modal-btns{display:flex;gap:.65rem;justify-content:center}
+.modal-btn{padding:.55rem 1.25rem;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none}
+.modal-btn.cancel{background:var(--bg-code);color:var(--text-secondary);border:1px solid var(--border)}.modal-btn.confirm{background:var(--red);color:#fff}
+.chat-box{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;margin-top:1.25rem;overflow:hidden}
+.chat-header{display:flex;justify-content:space-between;align-items:center;padding:.65rem .85rem;background:rgba(99,102,241,.1);border-bottom:1px solid var(--border);cursor:pointer}
+.chat-header h4{font-size:.85rem;color:#a5b4fc;font-weight:600;display:flex;align-items:center;gap:.4rem}
+.chat-header .chat-toggle{color:var(--text-muted);font-size:.75rem;transition:transform .3s}
+.chat-header .chat-toggle.open{transform:rotate(180deg)}
+.chat-body{display:none;flex-direction:column;height:280px}
+.chat-body.open{display:flex}
+.chat-messages{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.6rem;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.chat-msg{max-width:88%;padding:.6rem .8rem;border-radius:10px;font-size:.82rem;line-height:1.5;animation:fi .3s ease}
+.chat-msg.user{align-self:flex-end;background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.3);color:var(--text-primary);border-bottom-right-radius:3px}
+.chat-msg.ai{align-self:flex-start;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);border-bottom-left-radius:3px}
+.chat-msg.ai strong{color:var(--accent-2)}
+.chat-msg.ai code{background:var(--bg-code);padding:.1rem .3rem;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--accent-2)}
+.chat-msg.ai pre{background:var(--bg-code);padding:.4rem;border-radius:5px;margin:.35rem 0;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.45;color:var(--text-primary)}
+.chat-msg.typing{color:var(--text-muted);font-style:italic}
+.chat-input-row{display:flex;gap:.35rem;padding:.6rem;border-top:1px solid var(--border);background:var(--bg-secondary)}
+.chat-input{flex:1;padding:.45rem .65rem;background:var(--bg-code);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;resize:none;min-height:36px;max-height:80px}
+.chat-input:focus{border-color:#6366f1}
+.chat-input::placeholder{color:var(--text-muted)}
+.chat-send{padding:.45rem .75rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:8px;color:#fff;font-size:.85rem;cursor:pointer;font-weight:600;transition:all .2s;flex-shrink:0}
+.chat-send:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(99,102,241,.3)}
+.chat-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
+@media(max-width:600px){.lesson-container{padding:.85rem}.concept,.exercise{padding:.9rem}.code-block pre{font-size:.72rem;padding:.6rem}.code-input{font-size:.75rem;min-height:100px}.nav{padding:.5rem .6rem;gap:.3rem}.nav-btn{padding:.3rem .55rem;font-size:.7rem}.settings-bar{padding:.5rem .85rem;flex-direction:column;gap:.4rem}.api-input-group{min-width:100%}.model-select{width:100%}.btn-row{gap:.35rem}.btn{padding:.4rem .65rem;font-size:.78rem}.header{padding:1.25rem .85rem .6rem}.chat-body{height:240px}}
+</style>
+</head>
+<body>
+<div class="header"><h1><span class="js">JavaScript</span> para <span class="n8n">n8n</span></h1><p>Intro + 14 lecciones + examen final — solo el JS que necesitas para n8n</p></div>
+<div class="settings-bar">
+  <label>🔑 OpenAI:</label>
+  <div class="api-input-group"><input type="password" class="api-input" id="apiKeyInput" placeholder="sk-..."><button class="btn-save-api" onclick="saveApiKey()">Guardar</button></div>
+  <select class="model-select" id="modelSelect" onchange="saveModel()"><option value="gpt-4o-mini">GPT-4o Mini</option><option value="gpt-4o">GPT-4o</option><option value="gpt-4-turbo">GPT-4 Turbo</option><option value="gpt-3.5-turbo">GPT-3.5 Turbo</option></select>
+  <span class="api-status" id="apiStatus"></span>
+</div>
+<div class="progress-container">
+  <div class="progress-info"><span class="progress-label">Progreso</span><span class="progress-count" id="progressCount">0/16</span></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-actions"><button class="btn-reset" onclick="showResetModal()">Reiniciar</button></div>
+</div>
+<div class="nav-wrapper"><button class="nav-arrow" onclick="document.getElementById('nav').scrollLeft-=200">◀</button><div class="nav" id="nav"></div><button class="nav-arrow" onclick="document.getElementById('nav').scrollLeft+=200">▶</button></div>
+<div class="lesson-container" id="lc"></div>
+<div class="modal-overlay" id="resetModal"><div class="modal"><h3>⚠️ Reiniciar</h3><p>Se borra el progreso. La API key se mantiene.</p><div class="modal-btns"><button class="modal-btn cancel" onclick="hideRM()">Cancelar</button><button class="modal-btn confirm" onclick="resetP()">Reiniciar</button></div></div></div>
+<script>
+const L=[
+{id:0,title:"📖 Guía de estudio",desc:"Tu clase completa antes de empezar. Lee todo con calma — cuando termines, las lecciones van a tener mucho más sentido.",isIntro:true,concepts:[
+{title:"¿Qué es programar?",text:'Programar es darle <strong>instrucciones escritas</strong> a una máquina para que haga algo por ti. Igual que una receta de cocina: le dices paso a paso qué hacer y en qué orden. La máquina no piensa, solo sigue tus instrucciones exactamente como las escribes. Si te equivocas en una letra, no funciona. Pero no te asustes — los errores son normales y se arreglan fácil.'},
+{title:"¿Qué es JavaScript?",text:'JavaScript (JS) es uno de los muchos lenguajes de programación que existen. Es como un idioma: tú le hablas a la máquina en JavaScript, y ella te entiende. Hay otros lenguajes (Python, Java, C++...), pero n8n usa <strong>JavaScript</strong> en su Code node, así que es el que nos importa.<br><br>No necesitas ser programador ni tener estudios. Solo necesitas entender las piezas básicas — como aprender las 50 palabras más usadas de un idioma para poder comunicarte.'},
+{title:"¿Qué es n8n y el Code node?",text:'<strong>n8n</strong> es tu herramienta de automatización — conecta apps entre sí con nodos. Cada nodo hace una cosa: recibir un mensaje, enviar un email, guardar en una hoja...<br><br>El <strong>Code node</strong> es un nodo especial donde tú escribes JavaScript para hacer cosas que los otros nodos no pueden: transformar datos, hacer cálculos, tomar decisiones con lógica, formatear respuestas.<br><br>Piensa en los nodos normales como electrodomésticos (hacen una cosa concreta), y el Code node como una cocina completa donde tú decides qué cocinar.',code:{label:'Ejemplo real',content:'<span class="comment">// Un usuario manda "42" por Telegram</span>\n<span class="comment">// Tú quieres responderle con el doble</span>\n\n<span class="keyword">const</span> mensaje = $input.first().json.message.text;\n<span class="keyword">const</span> numero = <span class="function">Number</span>(mensaje);\n<span class="keyword">const</span> doble = numero * <span class="number">2</span>;\n\n<span class="keyword">return</span> [{ json: { respuesta: doble } }];\n<span class="comment">// El nodo de Telegram recibe 84 y lo envía</span>'},n8n:'Este Code node completo son solo 4 líneas. Cuando termines el curso, esto te va a parecer facilísimo.'},
+{title:"Los datos en programación: tipos básicos",text:'En JavaScript, los datos tienen <strong>tipos</strong>. Es importante porque no puedes sumar un texto con un número. Los tipos que vas a usar son:<br><br><strong>Texto (String):</strong> Todo lo que va entre comillas. Ejemplos: <code>"Hola"</code>, <code>"Pedro"</code>, <code>"42"</code> (sí, "42" entre comillas es texto, no número).<br><br><strong>Número (Number):</strong> Sin comillas. Ejemplos: <code>42</code>, <code>3.14</code>, <code>0</code>, <code>-5</code>.<br><br><strong>Verdadero/Falso (Boolean):</strong> Solo dos valores posibles: <code>true</code> o <code>false</code>. Se usa para decisiones: ¿está activo? ¿es mayor de edad?<br><br><strong>Lista (Array):</strong> Una lista ordenada de cosas: <code>["manzana", "pera", "uva"]</code>. Se accede por posición empezando en 0.<br><br><strong>Objeto (Object / JSON):</strong> Datos con nombre: <code>{ nombre: "Ana", edad: 28 }</code>. Es exactamente lo que recibes en n8n con <code>$json</code>.',code:{label:'Los tipos en acción',content:'<span class="keyword">const</span> texto = <span class="string">"Hola"</span>;        <span class="comment">// String</span>\n<span class="keyword">const</span> numero = <span class="number">42</span>;             <span class="comment">// Number</span>\n<span class="keyword">const</span> activo = <span class="number">true</span>;           <span class="comment">// Boolean</span>\n<span class="keyword">const</span> frutas = [<span class="string">"a"</span>,<span class="string">"b"</span>,<span class="string">"c"</span>]; <span class="comment">// Array</span>\n<span class="keyword">const</span> persona = {              <span class="comment">// Object</span>\n  nombre: <span class="string">"Ana"</span>,\n  edad: <span class="number">28</span>\n};'}},
+{title:"Variables: las cajas donde guardas datos",text:'Una <strong>variable</strong> es una caja con un nombre donde guardas un dato. Hay dos tipos:<br><br><strong>const</strong> = caja sellada. La llenas una vez y no se puede cambiar. Usarás esto el 90% del tiempo.<br><br><strong>let</strong> = caja abierta. Puedes cambiar lo que hay dentro después. Se usa cuando el valor depende de una decisión (if/else).<br><br>Imagina que recibes un paquete (dato del nodo anterior). Lo primero que haces es sacarlo y ponerlo en una caja con etiqueta (variable). Así puedes trabajar con él.',code:{label:'Analogía',content:'<span class="comment">// Recibes un mensaje de Telegram</span>\n<span class="comment">// Lo sacas y lo metes en una caja llamada "msg"</span>\n<span class="keyword">const</span> msg = <span class="string">"Hola, quiero una cita"</span>;\n\n<span class="comment">// Ahora puedes usar "msg" en vez del texto largo</span>\nmsg.<span class="function">length</span>       <span class="comment">// 21 caracteres</span>\nmsg.<span class="function">toUpperCase</span>() <span class="comment">// "HOLA, QUIERO UNA CITA"</span>'},n8n:'En n8n, la primera línea de casi todo Code node es: <code>const msg = $input.first().json.message.text;</code> — estás sacando el dato del nodo anterior y guardándolo en una variable.'},
+{title:"Métodos: acciones que puedes hacer con los datos",text:'Los datos tienen <strong>métodos</strong> — son acciones pegadas que puedes usar con un punto. Piensa en ellos como botones del dato:<br><br>Un texto tiene botones como: "ponme en mayúsculas", "cuántos caracteres tengo", "¿contiene esta palabra?".<br><br>Un array tiene botones como: "dame el primero", "cuántos hay", "sepárame en trozos".<br><br>No necesitas memorizarlos todos. Con el tiempo los irás usando y se quedan solos.',code:{label:'Métodos en acción',content:'<span class="keyword">const</span> msg = <span class="string">"hola mundo"</span>;\n\n<span class="comment">// Métodos de texto</span>\nmsg.<span class="function">toUpperCase</span>()    <span class="comment">// "HOLA MUNDO"</span>\nmsg.<span class="function">includes</span>(<span class="string">"hola"</span>) <span class="comment">// true</span>\nmsg.<span class="function">split</span>(<span class="string">" "</span>)        <span class="comment">// ["hola", "mundo"]</span>\nmsg.<span class="function">length</span>            <span class="comment">// 10</span>\n\n<span class="comment">// Métodos de array</span>\n<span class="keyword">const</span> lista = [<span class="number">5</span>, <span class="number">10</span>, <span class="number">15</span>];\nlista[<span class="number">0</span>]              <span class="comment">// 5 (primero)</span>\nlista.<span class="function">length</span>           <span class="comment">// 3 (cuántos hay)</span>\nlista.<span class="function">filter</span>(n => n > <span class="number">7</span>) <span class="comment">// [10, 15]</span>'}},
+{title:"JSON: el idioma de n8n",text:'<strong>JSON</strong> es simplemente un objeto JavaScript — datos organizados con nombres. Cuando conectas nodos en n8n, los datos viajan en formato JSON. Es como un formulario:<br><br>Nombre: Ana<br>Edad: 28<br>Email: ana@mail.com<br><br>En JSON eso se escribe así:',code:{label:'JSON = Objeto',content:'{\n  <span class="string">"nombre"</span>: <span class="string">"Ana"</span>,\n  <span class="string">"edad"</span>: <span class="number">28</span>,\n  <span class="string">"email"</span>: <span class="string">"ana@mail.com"</span>\n}\n\n<span class="comment">// Para acceder, bajas la escalera con puntos:</span>\ndatos.nombre  <span class="comment">// "Ana"</span>\ndatos.edad    <span class="comment">// 28</span>\ndatos.email   <span class="comment">// "ana@mail.com"</span>'},n8n:'Cuando escribes <code>$json.message.text</code> en n8n, estás bajando la escalera del JSON: primero entras en "message", luego sacas "text". Es exactamente esto.'},
+{title:"El patrón coger → procesar → devolver",text:'Este es el concepto más importante de todo el curso. <strong>Todo Code node sigue estos 3 pasos</strong>. Siempre. Sin excepción.<br><br><strong>1. COGER</strong> — Sacas los datos que te llegan del nodo anterior. Siempre empiezas así.<br><br><strong>2. PROCESAR</strong> — Haces algo con esos datos: calculas, transformas, decides, formateas. Aquí es donde usas todo lo que vas a aprender.<br><br><strong>3. DEVOLVER</strong> — Pasas el resultado al siguiente nodo con <code>return</code>. Sin return, los datos mueren ahí.',code:{label:'Ejemplo completo real',content:'<span class="comment">// Workflow: Telegram → Code → Telegram</span>\n<span class="comment">// Usuario envía "hola que tal amigo"</span>\n\n<span class="comment">// 1. COGER</span>\n<span class="keyword">const</span> msg = $input.first().json.message.text;\n\n<span class="comment">// 2. PROCESAR</span>\n<span class="keyword">const</span> palabras = msg.<span class="function">split</span>(<span class="string">" "</span>).length;  <span class="comment">// 4</span>\n<span class="keyword">const</span> mayus = msg.<span class="function">toUpperCase</span>();       <span class="comment">// "HOLA QUE TAL AMIGO"</span>\n<span class="keyword">const</span> largo = msg.<span class="function">length</span>;             <span class="comment">// 18</span>\n\n<span class="comment">// 3. DEVOLVER</span>\n<span class="keyword">return</span> [{ json: {\n  palabras: palabras,\n  mayusculas: mayus,\n  caracteres: largo\n} }];\n\n<span class="comment">// El nodo Telegram recibe estos 3 datos</span>\n<span class="comment">// y puede usarlos: {{ $json.palabras }} → 4</span>'},n8n:'Este ejemplo usa variables (const), métodos de texto (split, toUpperCase, length), y return. Son las lecciones 1, 2 y 7. Cuando las completes, este código te va a salir solo.'},
+{title:"Condicionales: tomar decisiones",text:'A veces no quieres hacer siempre lo mismo — quieres decidir. "Si el usuario es mayor de edad, déjalo pasar. Si no, deniégale acceso."<br><br>Eso es un <strong>if/else</strong>. Lee la condición, y si es verdadera hace una cosa, si es falsa hace otra. Es como un guardia en la puerta.',code:{label:'Ejemplo',content:'<span class="keyword">const</span> edad = <span class="number">17</span>;\n\n<span class="keyword">let</span> acceso;  <span class="comment">// caja vacía (let porque no sabemos el valor aún)</span>\n\n<span class="keyword">if</span> (edad >= <span class="number">18</span>) {\n  acceso = <span class="string">"Bienvenido"</span>;\n} <span class="keyword">else</span> {\n  acceso = <span class="string">"Acceso denegado"</span>;\n}\n\n<span class="comment">// acceso = "Acceso denegado" (porque 17 < 18)</span>'},n8n:'En tus workflows usarás esto para responder diferente según lo que mande el usuario, validar datos, clasificar información, etc.'},
+{title:"Errores: qué pasa cuando algo falla",text:'En programación, los errores pasan TODO el rato. No es un problema — es parte del proceso. Los errores más comunes son:<br><br><strong>Error de sintaxis:</strong> Escribiste algo mal. Falta una coma, un paréntesis, una comilla. Se arregla fácil.<br><br><strong>Error de lógica:</strong> El código funciona pero no hace lo que querías. Hay que repensar la lógica.<br><br><strong>Error de datos:</strong> Te llega un dato que no esperabas (texto en vez de número, dato vacío...). Para esto existe <code>try/catch</code> — atrapa el error antes de que rompa todo.',code:{label:'try/catch',content:'<span class="keyword">try</span> {\n  <span class="comment">// intento algo que puede fallar</span>\n  <span class="keyword">const</span> num = <span class="function">Number</span>(<span class="string">"hola"</span>); <span class="comment">// NaN!</span>\n  <span class="keyword">if</span> (<span class="function">isNaN</span>(num)) <span class="keyword">throw new</span> <span class="function">Error</span>(<span class="string">"No es número"</span>);\n} <span class="keyword">catch</span> (error) {\n  <span class="comment">// si falla, caigo aquí en vez de romper todo</span>\n  <span class="comment">// error.message = "No es número"</span>\n}'},n8n:'Sin try/catch, un error en el Code node detiene TODO el workflow. Con try/catch, tú decides qué hacer cuando algo falla.'},
+{title:"Mapa completo del curso",text:'<strong>🟢 BÁSICO — Lecciones 1 a 7:</strong><br>Variables → Texto → Números → Condicionales → Ternario → Arrays → Objetos<br>Con esto ya escribes Code nodes simples.<br><br><strong>🟡 INTERMEDIO — Lecciones 8 a 13:</strong><br>Map/Filter → Try/Catch → Fechas → Async/Await → Múltiples items → $input avanzado<br>Con esto manejas workflows complejos.<br><br><strong>🔴 EVALUACIÓN — Lecciones 14 y 15:</strong><br>Ejercicio final (todo junto) → Examen con IA (nota de 0 a 10)'},
+{title:"Cómo usar este curso",text:'• <strong>📘 Teoría</strong> — Lee la explicación con ejemplos de código<br>• <strong>⚡ En n8n</strong> — Cómo se aplica en workflows reales<br>• <strong>✍️ Ejercicio</strong> — Escribe tú el código<br>• <strong>✓ Comprobar</strong> — Verificación rápida automática<br>• <strong>🤖 IA</strong> — OpenAI analiza tu código y te explica qué está bien o mal<br>• <strong>🔄 Nuevo ejercicio</strong> — La IA genera ejercicios infinitos del mismo tema<br><br>Tu progreso se guarda automáticamente. Si cierras y vuelves, sigues donde lo dejaste.<br><br><strong>Consejo:</strong> No memorices. Entiende el patrón (coger → procesar → devolver) y practica. Cada lección construye sobre la anterior, así que no saltes a menos que ya domines el tema.'}
+],exercise:null},
+{id:1,title:"Variables",desc:"Guardar datos en el Code node.",concepts:[{title:"const — valor fijo",text:'<strong>const</strong> crea una variable inmutable.',code:{label:'JS',content:'<span class="keyword">const</span> nombre = <span class="string">"María"</span>;\n<span class="keyword">const</span> edad = <span class="number">30</span>;\n<span class="keyword">const</span> activo = <span class="number">true</span>;'},n8n:'<code>const msg = $input.first().json.message.text;</code>'},{title:"let — valor mutable",text:'<strong>let</strong> permite cambiar el valor después.',code:{label:'JS',content:'<span class="keyword">let</span> x = <span class="number">0</span>;\nx = <span class="number">1</span>; <span class="comment">// OK</span>\n\n<span class="keyword">const</span> y = <span class="number">10</span>;\ny = <span class="number">20</span>; <span class="comment">// ERROR!</span>'},n8n:'Usa <strong>let</strong> cuando el valor cambie (ej: dentro de if/else).'}],exercise:{title:"Crea 3 variables",desc:'<strong>producto</strong>="Laptop", <strong>precio</strong>=999, <strong>disponible</strong>=true.',placeholder:'// Escribe aquí\n',check:c=>/const\s+producto\s*=\s*["']Laptop["']/.test(c)&&/const\s+precio\s*=\s*999/.test(c)&&/const\s+disponible\s*=\s*true/.test(c),hint:'const nombre = valor; Texto entre comillas.',solution:'const producto = "Laptop";\nconst precio = 999;\nconst disponible = true;',aiContext:'3 const: producto="Laptop", precio=999, disponible=true.'}},
+{id:2,title:"Strings: texto",desc:"Manipular mensajes, emails, nombres...",concepts:[{title:"Métodos de texto",text:'Los strings tienen <strong>métodos</strong> que transforman.',code:{label:'JS',content:'<span class="keyword">const</span> m = <span class="string">"Hola Mundo"</span>;\nm.<span class="function">toUpperCase</span>()   <span class="comment">// "HOLA MUNDO"</span>\nm.<span class="function">toLowerCase</span>()   <span class="comment">// "hola mundo"</span>\nm.<span class="function">length</span>           <span class="comment">// 10</span>\nm.<span class="function">includes</span>(<span class="string">"Hola"</span>) <span class="comment">// true</span>\nm.<span class="function">replace</span>(<span class="string">"Mundo"</span>,<span class="string">"n8n"</span>) <span class="comment">// "Hola n8n"</span>\nm.<span class="function">trim</span>()            <span class="comment">// quita espacios</span>'},n8n:'Limpiar mensajes de Telegram y formatear respuestas.'},{title:"Template literals",text:'Con backticks (`) metes variables: <strong>${variable}</strong>.',code:{label:'JS',content:'<span class="keyword">const</span> n = <span class="string">"Pedro"</span>;\n<span class="keyword">const</span> msg = <span class="string">`Hola ${n}, bienvenido`</span>;'},n8n:'<code>const resp = `Palabras: ${count}\\nChars: ${chars}`</code>'}],exercise:{title:"Transforma texto",desc:'<code>const mensaje = "hola que tal"</code>. Crea <strong>resultado</strong> (mayúsculas) y <strong>largo</strong> (caracteres).',placeholder:'const mensaje = "hola que tal";\n\n',check:c=>/const\s+resultado\s*=\s*mensaje\.toUpperCase\(\)/.test(c)&&/const\s+largo\s*=\s*mensaje\.length/.test(c),hint:'mensaje.toUpperCase() y mensaje.length',solution:'const mensaje = "hola que tal";\n\nconst resultado = mensaje.toUpperCase();\nconst largo = mensaje.length;',aiContext:'resultado=mensaje.toUpperCase(), largo=mensaje.length'}},
+{id:3,title:"Números",desc:"Calcular precios, contar, promediar...",concepts:[{title:"Operaciones",text:'Operadores normales más <strong>%</strong> (resto).',code:{label:'JS',content:'<span class="number">10</span> + <span class="number">3</span>  <span class="comment">// 13</span>\n<span class="number">10</span> - <span class="number">3</span>  <span class="comment">// 7</span>\n<span class="number">10</span> * <span class="number">3</span>  <span class="comment">// 30</span>\n<span class="number">10</span> / <span class="number">3</span>  <span class="comment">// 3.33</span>\n<span class="number">10</span> % <span class="number">3</span>  <span class="comment">// 1 (resto)</span>'},n8n:'<code>n % 2 === 0</code> → par.'},{title:"Texto → número",text:'Datos de Telegram = texto. Convierte con <strong>Number()</strong>.',code:{label:'JS',content:'<span class="keyword">const</span> t = <span class="string">"42"</span>;\n<span class="keyword">const</span> n = <span class="function">Number</span>(t); <span class="comment">// 42</span>\nn + <span class="number">8</span>  <span class="comment">// 50 ✅</span>\nt + <span class="number">8</span>  <span class="comment">// "428" ❌</span>'},n8n:'<code>const num = Number($input.first().json.message.text);</code>'}],exercise:{title:"Calcula total",desc:'<code>const precioTexto = "150"</code>. Crea <strong>precio</strong> (Number), <strong>iva</strong> (21%), <strong>total</strong>.',placeholder:'const precioTexto = "150";\n\n',check:c=>/const\s+precio\s*=\s*Number\(precioTexto\)/.test(c)&&/const\s+iva\s*=\s*precio\s*\*\s*0?\.21/.test(c)&&/const\s+total\s*=\s*precio\s*\+\s*iva/.test(c),hint:'Number() convierte. 21% = *0.21.',solution:'const precioTexto = "150";\n\nconst precio = Number(precioTexto);\nconst iva = precio * 0.21;\nconst total = precio + iva;',aiContext:'Number("150"), iva=precio*0.21, total=precio+iva.'}},
+{id:4,title:"Condicionales: if/else",desc:"Si pasa X haz esto, si no haz lo otro.",concepts:[{title:"if / else / else if",text:'<strong>if</strong> evalúa condición. <strong>else if</strong> para más opciones.',code:{label:'JS',content:'<span class="keyword">let</span> r;\n<span class="keyword">if</span> (nota >= <span class="number">90</span>) {\n  r = <span class="string">"Excelente"</span>;\n} <span class="keyword">else if</span> (nota >= <span class="number">70</span>) {\n  r = <span class="string">"Aprobado"</span>;\n} <span class="keyword">else</span> {\n  r = <span class="string">"Suspendido"</span>;\n}'},n8n:'Usa <strong>let</strong> antes del if si asignas dentro.'},{title:"Comparadores",text:'Siempre <strong>===</strong> (triple igual).',code:{label:'JS',content:'a === b  <span class="comment">// igual</span>\na !== b  <span class="comment">// diferente</span>\na > b    <span class="comment">// mayor</span>\na < b    <span class="comment">// menor</span>\na >= b   <span class="comment">// mayor o igual</span>'},n8n:'Nunca uses == (doble). Siempre ===.'}],exercise:{title:"Clasifica número",desc:'<code>const numero = 7</code>. Crea <strong>tipo</strong> (positivo/negativo/cero) y <strong>paridad</strong> (par/impar).',placeholder:'const numero = 7;\n\n',check:c=>(/if\s*\(\s*numero\s*>\s*0\s*\)/.test(c)||/if\s*\(\s*numero\s*===\s*0\s*\)/.test(c))&&/numero\s*%\s*2\s*===\s*0/.test(c)&&/tipo\s*=/.test(c)&&/paridad\s*=/.test(c),hint:'let tipo; if (numero > 0)... Paridad: numero % 2 === 0.',solution:'const numero = 7;\n\nlet tipo;\nif (numero > 0) {\n  tipo = "positivo";\n} else if (numero < 0) {\n  tipo = "negativo";\n} else {\n  tipo = "cero";\n}\n\nlet paridad;\nif (numero % 2 === 0) {\n  paridad = "par";\n} else {\n  paridad = "impar";\n}',aiContext:'if/else if/else para tipo, % 2 para paridad.'}},
+{id:5,title:"Ternario: if en 1 línea",desc:"Versión corta del if/else para decisiones simples.",concepts:[{title:"condición ? si : no",text:'Una línea en vez de 5.',code:{label:'JS',content:'<span class="comment">// if/else (5 líneas)</span>\n<span class="keyword">let</span> estado;\n<span class="keyword">if</span> (edad >= <span class="number">18</span>) { estado = <span class="string">"adulto"</span>; }\n<span class="keyword">else</span> { estado = <span class="string">"menor"</span>; }\n\n<span class="comment">// Ternario (1 línea)</span>\n<span class="keyword">const</span> estado = edad >= <span class="number">18</span> ? <span class="string">"adulto"</span> : <span class="string">"menor"</span>;'},n8n:'Muy usado en el return para decidir valores rápido.'},{title:"Ternarios anidados",text:'Para más de 2 opciones.',code:{label:'JS',content:'<span class="keyword">const</span> tipo = n > <span class="number">0</span> ? <span class="string">"positivo"</span>\n  : n < <span class="number">0</span> ? <span class="string">"negativo"</span>\n  : <span class="string">"cero"</span>;'},n8n:'Si se complica mucho, mejor if/else normal.'}],exercise:{title:"Usa ternarios",desc:'<code>const puntos = 85</code>. Crea <strong>nivel</strong> ("avanzado" si >=80, "básico") y <strong>paridad</strong> ("par"/"impar"). Con ternarios.',placeholder:'const puntos = 85;\n\n',check:c=>/const\s+nivel\s*=.*\?/.test(c)&&/const\s+paridad\s*=.*\?/.test(c),hint:'const nivel = puntos >= 80 ? "avanzado" : "básico";',solution:'const puntos = 85;\n\nconst nivel = puntos >= 80 ? "avanzado" : "básico";\nconst paridad = puntos % 2 === 0 ? "par" : "impar";',aiContext:'Ternario para nivel y paridad.'}},
+{id:6,title:"Arrays: listas",desc:"Listas de datos — muy comunes en n8n.",concepts:[{title:"Crear y acceder",text:'Posiciones desde <strong>0</strong>.',code:{label:'JS',content:'<span class="keyword">const</span> f = [<span class="string">"manzana"</span>, <span class="string">"pera"</span>, <span class="string">"uva"</span>];\nf[<span class="number">0</span>]  <span class="comment">// "manzana"</span>\nf[<span class="number">2</span>]  <span class="comment">// "uva"</span>\nf.<span class="function">length</span>  <span class="comment">// 3</span>'},n8n:'La misma escalera: <code>$json.choices[0].message.content</code>'},{title:"split / join / filter",text:'Métodos esenciales.',code:{label:'JS',content:'<span class="string">"a,b,c"</span>.<span class="function">split</span>(<span class="string">","</span>)  <span class="comment">// ["a","b","c"]</span>\n[<span class="string">"a"</span>,<span class="string">"b"</span>].<span class="function">join</span>(<span class="string">", "</span>)  <span class="comment">// "a, b"</span>\n[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>].<span class="function">filter</span>(n => n > <span class="number">1</span>)  <span class="comment">// [2,3]</span>'},n8n:'<strong>split</strong> y <strong>join</strong> son los más usados.'}],exercise:{title:"Trabaja con arrays",desc:'<code>const palabras = "hola que tal estás"</code>. Crea <strong>lista</strong>, <strong>primera</strong>, <strong>ultima</strong>, <strong>total</strong>.',placeholder:'const palabras = "hola que tal estás";\n\n',check:c=>/const\s+lista\s*=\s*palabras\.split\(/.test(c)&&/const\s+primera\s*=\s*lista\[0\]/.test(c)&&/const\s+total\s*=\s*lista\.length/.test(c),hint:'split(" "), lista[0], lista[lista.length-1], lista.length',solution:'const palabras = "hola que tal estás";\n\nconst lista = palabras.split(" ");\nconst primera = lista[0];\nconst ultima = lista[lista.length - 1];\nconst total = lista.length;',aiContext:'split, [0], [length-1], length.'}},
+{id:7,title:"Objetos: JSON",desc:"JSON de n8n = objetos JavaScript.",concepts:[{title:"Crear y acceder",text:'Datos con <strong>claves</strong>.',code:{label:'JS',content:'<span class="keyword">const</span> c = { nombre: <span class="string">"Ana"</span>, edad: <span class="number">28</span> };\nc.nombre  <span class="comment">// "Ana"</span>'},n8n:'<code>$json.message.text</code> = acceder a un objeto.'},{title:"Anidados",text:'Objetos dentro de objetos con arrays.',code:{label:'JS',content:'<span class="keyword">const</span> p = {\n  cliente: { nombre: <span class="string">"Pedro"</span> },\n  items: [<span class="string">"laptop"</span>, <span class="string">"mouse"</span>]\n};\np.cliente.nombre  <span class="comment">// "Pedro"</span>\np.items[<span class="number">0</span>]  <span class="comment">// "laptop"</span>'},n8n:'La escalera aplica igual.'}],exercise:{title:"Navega el objeto",desc:'Saca <strong>email</strong>, <strong>segundo</strong> producto, <strong>total</strong> productos.',placeholder:'const datos = {\n  contacto: { nombre: "Luis", email: "luis@mail.com" },\n  productos: ["silla", "mesa", "lámpara"]\n};\n\n',check:c=>/const\s+email\s*=\s*datos\.contacto\.email/.test(c)&&/const\s+segundo\s*=\s*datos\.productos\[1\]/.test(c)&&/const\s+total\s*=\s*datos\.productos\.length/.test(c),hint:'datos.contacto.email, datos.productos[1], datos.productos.length',solution:'const datos = {\n  contacto: { nombre: "Luis", email: "luis@mail.com" },\n  productos: ["silla", "mesa", "lámpara"]\n};\n\nconst email = datos.contacto.email;\nconst segundo = datos.productos[1];\nconst total = datos.productos.length;',aiContext:'Acceder a objetos anidados y arrays.'}},
+{id:8,title:"Map y Filter",desc:"Transformar y filtrar listas enteras de golpe.",concepts:[{title:"map — transformar todo",text:'Crea nuevo array aplicando función a cada elemento.',code:{label:'JS',content:'<span class="keyword">const</span> precios = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>];\n<span class="keyword">const</span> conIva = precios.<span class="function">map</span>(p => p * <span class="number">1.21</span>);\n<span class="comment">// [12.1, 24.2, 36.3]</span>'},n8n:'Transformar todos los items de golpe.'},{title:"filter — quedarte con algunos",text:'Solo los que cumplan la condición.',code:{label:'JS',content:'<span class="keyword">const</span> edades = [<span class="number">15</span>, <span class="number">22</span>, <span class="number">17</span>, <span class="number">30</span>];\n<span class="keyword">const</span> adultos = edades.<span class="function">filter</span>(e => e >= <span class="number">18</span>);\n<span class="comment">// [22, 30]</span>'},n8n:'Filtrar emails no leídos, pedidos pendientes, etc.'}],exercise:{title:"Map y Filter",desc:'<code>const nums = [5, 12, 8, 30, 3, 18]</code>. Crea <strong>dobles</strong> (*2 con map) y <strong>grandes</strong> (>10 con filter).',placeholder:'const nums = [5, 12, 8, 30, 3, 18];\n\n',check:c=>/const\s+dobles\s*=\s*nums\.map\(/.test(c)&&/const\s+grandes\s*=\s*nums\.filter\(/.test(c),hint:'dobles = nums.map(n => n * 2); grandes = nums.filter(n => n > 10)',solution:'const nums = [5, 12, 8, 30, 3, 18];\n\nconst dobles = nums.map(n => n * 2);\nconst grandes = nums.filter(n => n > 10);',aiContext:'map para duplicar, filter para >10.'}},
+{id:9,title:"Try/Catch: errores",desc:"Evitar que tu workflow se rompa cuando algo falla.",concepts:[{title:"try/catch",text:'Envuelve código peligroso. Si falla, catch lo atrapa.',code:{label:'JS',content:'<span class="keyword">try</span> {\n  <span class="keyword">const</span> d = JSON.<span class="function">parse</span>(texto);\n} <span class="keyword">catch</span> (error) {\n  <span class="keyword">const</span> d = { msg: <span class="string">"Error"</span> };\n}'},n8n:'Sin try/catch el workflow entero se detiene. Con él, manejas el error y continúas.'},{title:"isNaN y throw",text:'Validar datos y lanzar errores a propósito.',code:{label:'JS',content:'<span class="keyword">const</span> n = <span class="function">Number</span>(texto);\n<span class="keyword">if</span> (<span class="function">isNaN</span>(n)) {\n  <span class="keyword">throw new</span> <span class="function">Error</span>(<span class="string">"No es número"</span>);\n}'},n8n:'<strong>isNaN()</strong> = no es número. <strong>throw</strong> lanza error para que catch lo atrape.'}],exercise:{title:"Protege con try/catch",desc:'Code node: convierte mensaje a número y calcula doble. Si falla, devuelve <strong>error: "Envía un número"</strong>.',placeholder:'// try/catch\n',check:c=>/try\s*\{/.test(c)&&/catch/.test(c)&&/return/.test(c),hint:'try { Number() + isNaN check } catch { error message }',solution:'let resultado;\n\ntry {\n  const msg = $input.first().json.message.text;\n  const num = Number(msg);\n  if (isNaN(num)) throw new Error("No es número");\n  resultado = { numero: num, doble: num * 2 };\n} catch (error) {\n  resultado = { error: "Envía un número" };\n}\n\nreturn [{ json: resultado }];',aiContext:'try/catch con Number(), isNaN(), throw, return.'}},
+{id:10,title:"Fechas",desc:"Timestamps, formatear, comparar. Esencial para plazos.",concepts:[{title:"Date",text:'Meses empiezan en <strong>0</strong> (enero=0).',code:{label:'JS',content:'<span class="keyword">const</span> h = <span class="keyword">new</span> <span class="function">Date</span>();\nh.<span class="function">getFullYear</span>()  <span class="comment">// 2026</span>\nh.<span class="function">getMonth</span>()     <span class="comment">// 0-11</span>\nh.<span class="function">getDate</span>()      <span class="comment">// día</span>\nh.<span class="function">getDay</span>()       <span class="comment">// 0=dom</span>\nh.<span class="function">toISOString</span>()  <span class="comment">// formato ISO</span>'},n8n:'APIs esperan ISO. Usa <code>.toISOString()</code>.'}],exercise:{title:"Fechas",desc:'Crea <strong>hoy</strong> (Date). <strong>fechaFormateada</strong> DD/MM/YYYY. <strong>esFinDeSemana</strong> (sáb o dom).',placeholder:'// Fechas\n',check:c=>/new\s+Date/.test(c)&&/getMonth/.test(c)&&/getDay/.test(c),hint:'getDate(), getMonth()+1, getFullYear(), getDay()===0||===6',solution:'const hoy = new Date();\nconst fechaFormateada = `${hoy.getDate()}/${hoy.getMonth()+1}/${hoy.getFullYear()}`;\nconst esFinDeSemana = hoy.getDay() === 0 || hoy.getDay() === 6;',aiContext:'new Date, formatear DD/MM/YYYY, getDay para fin de semana.'}},
+{id:11,title:"Async/Await",desc:"Esperar respuestas de APIs dentro del Code node.",concepts:[{title:"await",text:'<strong>await</strong> = espera a que termine.',code:{label:'JS',content:'<span class="comment">// Sin await ❌</span>\n<span class="keyword">const</span> d = <span class="function">fetch</span>(url); <span class="comment">// Promise, no datos</span>\n\n<span class="comment">// Con await ✅</span>\n<span class="keyword">const</span> r = <span class="keyword">await</span> <span class="function">fetch</span>(url);\n<span class="keyword">const</span> d = <span class="keyword">await</span> r.<span class="function">json</span>();'},n8n:'El Code node soporta <strong>await</strong> directamente. No necesitas async function.'}],exercise:{title:"Fetch con await",desc:'Llama a <code>https://jsonplaceholder.typicode.com/todos/1</code> y devuelve los datos.',placeholder:'// fetch + await\n',check:c=>/await\s+fetch/.test(c)&&/await.*\.json\(\)/.test(c)&&/return/.test(c),hint:'const r = await fetch(url); const d = await r.json(); return [{json:d}];',solution:'const response = await fetch("https://jsonplaceholder.typicode.com/todos/1");\nconst datos = await response.json();\n\nreturn [{ json: datos }];',aiContext:'await fetch(), await .json(), return.'}},
+{id:12,title:"Múltiples items",desc:"Devolver varios resultados, no uno solo.",concepts:[{title:"Array de items",text:'Cada objeto en el return = un item separado en n8n.',code:{label:'JS',content:'<span class="comment">// 1 item</span>\n<span class="keyword">return</span> [{ json: { n: <span class="string">"Ana"</span> } }];\n\n<span class="comment">// 3 items (nodo siguiente se ejecuta 3 veces)</span>\n<span class="keyword">return</span> [\n  { json: { n: <span class="string">"Ana"</span> } },\n  { json: { n: <span class="string">"Pedro"</span> } },\n  { json: { n: <span class="string">"Luis"</span> } }\n];'},n8n:'3 items → Telegram envía 3 mensajes.'},{title:"map para items",text:'Convertir array en items de n8n.',code:{label:'JS',content:'<span class="keyword">const</span> nombres = [<span class="string">"Ana"</span>, <span class="string">"Pedro"</span>];\n\n<span class="keyword">return</span> nombres.<span class="function">map</span>(n => ({\n  json: { nombre: n, saludo: <span class="string">`Hola ${n}`</span> }\n}));'},n8n:'Patrón potente: lista → items que fluyen por el workflow.'}],exercise:{title:"Múltiples items",desc:'<code>const frutas = ["manzana","pera","uva"]</code>. Devuelve item por fruta con <strong>fruta</strong> y <strong>mayusculas</strong>.',placeholder:'const frutas = ["manzana", "pera", "uva"];\n\n',check:c=>/return\s+frutas\.map/.test(c)&&/json\s*:/.test(c)&&/toUpperCase/.test(c),hint:'return frutas.map(f => ({ json: { fruta: f, mayusculas: f.toUpperCase() } }));',solution:'const frutas = ["manzana", "pera", "uva"];\n\nreturn frutas.map(f => ({\n  json: { fruta: f, mayusculas: f.toUpperCase() }\n}));',aiContext:'return frutas.map() con json: { fruta, mayusculas }.'}},
+{id:13,title:"$input avanzado",desc:"first() vs all() — un item o todos.",concepts:[{title:"first() vs all()",text:'<strong>first()</strong> = un item. <strong>all()</strong> = todos.',code:{label:'JS',content:'<span class="comment">// Un item</span>\n<span class="keyword">const</span> d = $input.first().json;\n\n<span class="comment">// Todos</span>\n<span class="keyword">const</span> todos = $input.all();\n<span class="comment">// [{json:{...}}, {json:{...}}, ...]</span>\n\n<span class="keyword">return</span> todos.<span class="function">map</span>(i => ({\n  json: { original: i.json.nombre }\n}));'},n8n:'<strong>first()</strong> para un dato. <strong>all()</strong> para procesar listas.'},{title:"filter + map combo",text:'Filtrar y transformar encadenado.',code:{label:'JS',content:'<span class="keyword">return</span> $input.all()\n  .<span class="function">filter</span>(i => i.json.activo)\n  .<span class="function">map</span>(i => ({\n    json: { nombre: i.json.nombre.<span class="function">toUpperCase</span>() }\n  }));'},n8n:'El patrón más potente: filtrar + transformar + devolver.'}],exercise:{title:"Procesa múltiples items",desc:'Usa <code>$input.all()</code>. Cada item tiene email y activo. Filtra activos y devuelve email + dominio (después de @).',placeholder:'// Filtra activos, extrae dominio\n',check:c=>/\$input\.all\(\)/.test(c)&&/filter/.test(c)&&/map/.test(c)&&/split/.test(c)&&/return/.test(c),hint:'items.filter(i=>i.json.activo).map(i=>({json:{email:i.json.email, dominio:i.json.email.split("@")[1]}}))',solution:'const items = $input.all();\n\nreturn items\n  .filter(i => i.json.activo === true)\n  .map(i => ({\n    json: {\n      email: i.json.email,\n      dominio: i.json.email.split("@")[1]\n    }\n  }));',aiContext:'$input.all(), filter activos, map con split("@")[1].'}},
+{id:14,title:"Ejercicio final",desc:"Demuestra todo lo aprendido.",concepts:[{title:"Cheatsheet completo",isCheatsheet:true,items:[{code:'const / let',desc:'Variable fija / mutable'},{code:'.toUpperCase() .toLowerCase()',desc:'Mayús / minús'},{code:'.length',desc:'Longitud'},{code:'.split() .join()',desc:'Texto↔Array'},{code:'.includes() .replace() .trim()',desc:'Buscar, reemplazar, limpiar'},{code:'`texto ${var}`',desc:'Template literal'},{code:'Number("42")',desc:'Texto→Número'},{code:'n % 2 === 0',desc:'¿Par?'},{code:'cond ? "si" : "no"',desc:'Ternario'},{code:'.map(x => ...) .filter(x => ...)',desc:'Transformar / Filtrar'},{code:'try {} catch(e) {}',desc:'Manejar errores'},{code:'isNaN() / throw new Error()',desc:'Validar / Lanzar error'},{code:'new Date() .toISOString()',desc:'Fecha'},{code:'await fetch(url)',desc:'Llamar API'},{code:'$input.first().json / $input.all()',desc:'Un item / Todos'},{code:'return [{ json: {} }]',desc:'Devolver'}]}],exercise:{title:"Code node definitivo",desc:'Recibe mensaje de Telegram. Devuelve: <strong>original</strong>, <strong>palabras</strong>, <strong>caracteres</strong>, <strong>mayusculas</strong>, <strong>tipo</strong> (corto<5/largo>=5), <strong>fecha</strong> (ISO). Si vacío → error con try/catch.',placeholder:'// Todo junto\n',check:c=>/\$input\.first\(\)/.test(c)&&/try\s*\{/.test(c)&&/catch/.test(c)&&/split/.test(c)&&/toUpperCase/.test(c)&&/Date/.test(c)&&/return\s*\[\s*\{\s*json/.test(c),hint:'try/catch envuelve todo. Dentro: coge msg, valida, calcula, añade Date, return.',solution:'let resultado;\n\ntry {\n  const msg = $input.first().json.message.text;\n  if (!msg || msg.trim() === "") throw new Error("Mensaje vacío");\n  \n  const palabras = msg.split(" ").length;\n  const caracteres = msg.length;\n  const mayusculas = msg.toUpperCase();\n  const tipo = palabras < 5 ? "corto" : "largo";\n  const fecha = new Date().toISOString();\n  \n  resultado = { original: msg, palabras, caracteres, mayusculas, tipo, fecha };\n} catch (error) {\n  resultado = { error: error.message };\n}\n\nreturn [{ json: resultado }];',aiContext:'Code node completo: try/catch, validar vacío, split, length, toUpperCase, ternario tipo, Date ISO, return.'}},
+{id:15,title:"🎓 EXAMEN FINAL",desc:"Sin pistas. Sin soluciones. Sin ayuda. Solo tú y la IA evaluando tu nivel real.",isExam:true,concepts:[],exercise:null}
+];
+
+let done=new Set(),cur=0;
+function loadS(){try{const s=localStorage.getItem('jsn8n_done');if(s)done=new Set(JSON.parse(s));const l=localStorage.getItem('jsn8n_cur');if(l)cur=parseInt(l);const k=localStorage.getItem('jsn8n_key');if(k)document.getElementById('apiKeyInput').value=k;const m=localStorage.getItem('jsn8n_mdl');if(m)document.getElementById('modelSelect').value=m;}catch(e){}updAPI();}
+function saveS(){try{localStorage.setItem('jsn8n_done',JSON.stringify([...done]));localStorage.setItem('jsn8n_cur',cur.toString());}catch(e){}}
+function saveApiKey(){try{localStorage.setItem('jsn8n_key',document.getElementById('apiKeyInput').value.trim());}catch(e){}updAPI();}
+function saveModel(){try{localStorage.setItem('jsn8n_mdl',document.getElementById('modelSelect').value);}catch(e){}}
+function updAPI(){const s=document.getElementById('apiStatus'),k=document.getElementById('apiKeyInput').value.trim();if(k&&k.startsWith('sk-')){s.className='api-status saved';s.textContent='✓';}else{s.className='api-status missing';s.textContent=k?'✗':'';}}
+function showResetModal(){document.getElementById('resetModal').classList.add('show');}
+function hideRM(){document.getElementById('resetModal').classList.remove('show');}
+function resetP(){done=new Set();cur=0;saveS();rNav();rL(0);updP();hideRM();}
+
+function rNav(){document.getElementById('nav').innerHTML=L.map((l,i)=>`<button class="nav-btn ${i===cur?'active':''} ${done.has(i)?'completed':''}" onclick="go(${i})">${l.id}. ${l.title}</button>`).join('');}
+
+function rL(i){const c=document.getElementById('lc'),l=L[i];
+if(!l){c.innerHTML=`<div class="final-screen"><div class="trophy">🏆</div><h2>¡Todo completado!</h2><p>Has terminado las 14 lecciones y el examen final. Ya dominas JavaScript para n8n.</p></div>`;return;}
+if(l.isExam){renderExam(i);return;}
+if(l.isIntro){
+let h=`<div class="lesson active"><div class="lesson-header"><div class="lesson-number" style="color:var(--accent-2)">📖 GUÍA DE ESTUDIO</div><h2>Antes de empezar</h2><p class="lesson-desc">${l.desc}</p></div>`;
+l.concepts.forEach(co=>{h+=`<div class="concept"><h3>${co.title}</h3><p>${co.text}</p>`;if(co.code)h+=`<div class="code-block"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">${co.code.label}</span></div><pre>${co.code.content}</pre></div>`;if(co.n8n)h+=`<div class="n8n-context"><p>${co.n8n}</p></div>`;h+=`</div>`;});
+h+=`<button class="btn-next visible" onclick="done.add(0);saveS();updP();rNav();go(1)">🚀 Empezar lección 1 →</button></div>`;
+c.innerHTML=h;return;}
+let h=`<div class="lesson active"><div class="lesson-header"><div class="lesson-number">Lección ${l.id} de ${L.length-2}</div><h2>${l.title}</h2><p class="lesson-desc">${l.desc}</p></div>`;
+l.concepts.forEach(co=>{if(co.isCheatsheet){h+=`<div class="cheatsheet"><h3>📋 ${co.title}</h3>${co.items.map(x=>`<div class="cheat-item"><span class="cheat-code">${x.code}</span><span class="cheat-desc">${x.desc}</span></div>`).join('')}</div>`;}else{h+=`<div class="concept"><h3>${co.title}</h3><p>${co.text}</p>`;if(co.code)h+=`<div class="code-block"><div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">${co.code.label}</span></div><pre>${co.code.content}</pre></div>`;if(co.n8n)h+=`<div class="n8n-context"><p>${co.n8n}</p></div>`;h+=`</div>`;}});
+if(l.exercise){const e=l.exercise;h+=`<div class="exercise"><div class="exercise-label">✍️ Ejercicio</div><h4>${e.title}</h4><p>${e.desc}</p><textarea class="code-input" id="c-${i}" spellcheck="false">${e.placeholder}</textarea><div class="btn-row"><button class="btn btn-check" onclick="chk(${i})">✓ Comprobar</button><button class="btn btn-ai" id="ab-${i}" onclick="ai(${i})"><span class="spinner"></span><span class="btn-text">🤖 IA</span></button><button class="btn btn-hint" onclick="hint(${i})">💡 Pista</button><button class="btn btn-solution" onclick="sol(${i})">📖 Solución</button><button class="btn btn-gen" id="gb-${i}" onclick="genEx(${i})"><span class="spinner"></span><span class="btn-text">🔄 Nuevo ejercicio</span></button></div><div class="feedback" id="f-${i}"></div><div id="gz-${i}"></div></div>`;}
+h+=`<div class="chat-box"><div class="chat-header" onclick="toggleChat(${i})"><h4>💬 Preguntas sobre esta lección</h4><span class="chat-toggle" id="ct-${i}">▼</span></div><div class="chat-body" id="cb-${i}"><div class="chat-messages" id="cm-${i}"><div class="chat-msg ai">¡Hola! Soy tu tutor de esta lección. Pregúntame cualquier duda sobre <strong>${l.title}</strong>.</div></div><div class="chat-input-row"><textarea class="chat-input" id="ci-${i}" placeholder="Escribe tu duda..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat(${i})}"></textarea><button class="chat-send" id="cs-${i}" onclick="sendChat(${i})">Enviar</button></div></div></div>`;
+h+=`<button class="btn-next ${done.has(i)?'visible':''}" id="nx-${i}" onclick="next()">Siguiente →</button></div>`;c.innerHTML=h;}
+
+function chk(i){const code=document.getElementById(`c-${i}`).value,fb=document.getElementById(`f-${i}`);
+if(L[i].exercise.check(code)){fb.className='feedback correct';fb.innerHTML='✅ ¡Correcto! Usa 🤖 IA para análisis detallado.';markD(i);}else{fb.className='feedback incorrect';fb.innerHTML='❌ Revisa. Usa pista o IA.';}}
+function hint(i){const fb=document.getElementById(`f-${i}`);fb.className='feedback hint';fb.innerHTML='💡 '+L[i].exercise.hint;}
+function sol(i){document.getElementById(`c-${i}`).value=L[i].exercise.solution;const fb=document.getElementById(`f-${i}`);fb.className='feedback hint';fb.innerHTML='📖 Estudia la solución e intenta sin mirar.';}
+function markD(i){done.add(i);document.getElementById(`nx-${i}`).classList.add('visible');updP();rNav();saveS();}
+
+async function ai(i){const k=document.getElementById('apiKeyInput').value.trim(),m=document.getElementById('modelSelect').value,code=document.getElementById(`c-${i}`).value,fb=document.getElementById(`f-${i}`),btn=document.getElementById(`ab-${i}`),l=L[i];
+if(!k||!k.startsWith('sk-')){fb.className='feedback incorrect';fb.innerHTML='❌ Guarda tu API key arriba.';return;}
+if(!code.trim()||code.trim()===l.exercise.placeholder.trim()){fb.className='feedback incorrect';fb.innerHTML='❌ Escribe código primero.';return;}
+btn.classList.add('loading');btn.disabled=true;fb.className='feedback ai-response';fb.innerHTML='<div class="ai-badge">IA</div> Analizando...';fb.style.display='block';
+try{const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},body:JSON.stringify({model:m,max_tokens:600,temperature:.3,messages:[{role:'system',content:`Eres un tutor de JavaScript para principiantes que están aprendiendo a usar el Code node de n8n. El alumno NO sabe programar, está aprendiendo desde cero.
+
+LECCIÓN ACTUAL: ${l.title}
+CONCEPTOS DE ESTA LECCIÓN: ${l.exercise.aiContext}
+
+REGLAS:
+- SIEMPRE en español
+- Evalúa SOLO con los conceptos de esta lección — no menciones cosas avanzadas que el alumno no ha visto
+- Di si está CORRECTO ✅ o INCORRECTO ❌
+- Si está INCORRECTO:
+  · Explica el error como si hablaras con alguien que nunca ha programado
+  · Usa una analogía simple si ayuda (ej: "es como poner la dirección mal en un paquete")
+  · Muestra EXACTAMENTE cómo debería verse la línea corregida
+  · Máximo 4-5 líneas
+- Si está CORRECTO:
+  · Dile qué hizo bien en 1 línea
+  · Dale un tip práctico de cómo usaría esto en n8n (1-2 líneas)
+- La solución NO tiene que ser idéntica a la referencia — si funciona correctamente, es válida
+- NUNCA uses jerga técnica sin explicarla
+- Sé amigable y paciente`},{role:'user',content:`EJERCICIO: ${l.exercise.desc}\nSOLUCIÓN REFERENCIA: ${l.exercise.solution}\n\nCÓDIGO DEL ALUMNO:\n${code}\n\nEvalúa si funciona. Si hay error, explícalo de forma muy simple.`}]})});
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`Error ${r.status}`);}
+const d=await r.json(),t=d.choices[0].message.content.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre>$2</pre>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+fb.innerHTML=`<div class="ai-badge">🤖 ${m}</div>${t}`;
+if(d.choices[0].message.content.includes('✅'))markD(i);
+}catch(e){fb.className='feedback incorrect';fb.innerHTML=`❌ ${e.message}`;}
+finally{btn.classList.remove('loading');btn.disabled=false;}}
+
+async function genEx(i){const k=document.getElementById('apiKeyInput').value.trim(),m=document.getElementById('modelSelect').value,btn=document.getElementById(`gb-${i}`),gz=document.getElementById(`gz-${i}`),l=L[i];
+if(!k||!k.startsWith('sk-')){const fb=document.getElementById(`f-${i}`);fb.className='feedback incorrect';fb.innerHTML='❌ Guarda tu API key arriba.';return;}
+btn.classList.add('loading');btn.disabled=true;
+gz.innerHTML='<div class="gen-zone"><div class="gen-label">🔄 Generando ejercicio nuevo...</div></div>';
+try{const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},body:JSON.stringify({model:m,max_tokens:800,temperature:0.8,messages:[{role:'system',content:`Eres profesor de JavaScript para n8n. Genera UN ejercicio NUEVO y DIFERENTE sobre el mismo tema.
+
+RESPONDE EXACTAMENTE en este formato (sin markdown, sin backticks alrededor del JSON):
+{"title":"título corto","desc":"descripción del ejercicio con datos concretos","hint":"pista útil","solution":"código solución completo","startCode":"código inicial que ve el alumno"}
+
+REGLAS CRÍTICAS:
+- SIEMPRE en español
+- El ejercicio debe ser DIFERENTE al original pero del MISMO tema EXACTO
+- USA SOLO los conceptos de esta lección específica, NADA más avanzado
+- Si la lección es sobre variables (const/let), NO uses if/else, arrays, map, filter, try/catch, return, ni nada que no sea declarar variables con const y let
+- Si la lección es sobre strings, solo usa métodos de texto (toUpperCase, length, includes, replace, split, trim) y variables
+- Si la lección es sobre números, solo usa operaciones matemáticas (+,-,*,/,%) y Number()
+- Si la lección es sobre if/else, puedes usar variables + if/else/else if + comparadores, nada más
+- Si la lección es sobre ternarios, solo ternarios y variables
+- Si la lección es sobre arrays, solo arrays y sus métodos básicos
+- Si la lección es sobre objetos, solo acceso a objetos con puntos y corchetes
+- NUNCA uses conceptos de lecciones posteriores
+- El alumno debe poder resolver el ejercicio SOLO con lo que aprendió en esta lección
+- Usa datos y variables distintos (otros nombres, otros números, otros escenarios)
+- La solución debe ser código JavaScript válido
+- El startCode es solo un comentario guía, no la solución`},{role:'user',content:`TEMA EXACTO: ${l.title}
+DESCRIPCIÓN: ${l.desc}
+CONCEPTOS PERMITIDOS: ${l.exercise.aiContext}
+EJERCICIO ORIGINAL: ${l.exercise.desc}
+SOLUCIÓN ORIGINAL: ${l.exercise.solution}
+
+Genera un ejercicio que use SOLO los conceptos de esta lección.`}]})});
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`Error ${r.status}`);}
+const d=await r.json();
+let raw=d.choices[0].message.content.trim();
+raw=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+const ex=JSON.parse(raw);
+gz.innerHTML=`<div class="gen-zone">
+<div class="gen-label">🔄 Ejercicio generado por IA</div>
+<h4>${ex.title}</h4>
+<p>${ex.desc}</p>
+<textarea class="code-input" id="gc-${i}" spellcheck="false">${ex.startCode||'// Escribe aquí\n'}</textarea>
+<div class="btn-row">
+<button class="btn btn-ai" id="gab-${i}" onclick="verifyGen(${i})"><span class="spinner"></span><span class="btn-text">🤖 Verificar</span></button>
+<button class="btn btn-hint" onclick="document.getElementById('gf-${i}').className='feedback hint';document.getElementById('gf-${i}').innerHTML='💡 ${ex.hint.replace(/'/g,"\\'")}'"">💡 Pista</button>
+<button class="btn btn-solution" onclick="document.getElementById('gc-${i}').value=genSolutions[${i}];document.getElementById('gf-${i}').className='feedback hint';document.getElementById('gf-${i}').innerHTML='📖 Solución mostrada.'">📖 Solución</button>
+<button class="btn btn-gen" id="gb2-${i}" onclick="genEx(${i})"><span class="spinner"></span><span class="btn-text">🔄 Otro más</span></button>
+</div>
+<div class="feedback" id="gf-${i}"></div>
+</div>`;
+if(!window.genSolutions)window.genSolutions={};
+window.genSolutions[i]=ex.solution;
+if(!window.genContexts)window.genContexts={};
+window.genContexts[i]={title:ex.title,desc:ex.desc,solution:ex.solution};
+}catch(e){gz.innerHTML=`<div class="gen-zone"><p style="color:var(--red)">❌ Error: ${e.message}</p></div>`;}
+finally{btn.classList.remove('loading');btn.disabled=false;}}
+
+async function verifyGen(i){const k=document.getElementById('apiKeyInput').value.trim(),m=document.getElementById('modelSelect').value,code=document.getElementById(`gc-${i}`).value,fb=document.getElementById(`gf-${i}`),btn=document.getElementById(`gab-${i}`),ctx=window.genContexts[i];
+if(!code.trim()){fb.className='feedback incorrect';fb.innerHTML='❌ Escribe código primero.';return;}
+btn.classList.add('loading');btn.disabled=true;fb.className='feedback ai-response';fb.innerHTML='<div class="ai-badge">IA</div> Analizando...';fb.style.display='block';
+try{const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},body:JSON.stringify({model:m,max_tokens:600,temperature:.3,messages:[{role:'system',content:`Eres un tutor de JavaScript para principiantes que están aprendiendo n8n. El alumno NO sabe programar.
+
+REGLAS:
+- SIEMPRE en español
+- Di si está CORRECTO ✅ o INCORRECTO ❌
+- Si hay error: explícalo como si hablaras con alguien que nunca ha programado. Muestra la línea corregida. Máx 4-5 líneas
+- Si está correcto: dile qué hizo bien y un tip para n8n
+- La solución NO tiene que ser idéntica, solo funcionar
+- NUNCA uses jerga sin explicar
+- Sé amigable y paciente`},{role:'user',content:`EJERCICIO: ${ctx.desc}\nSOLUCIÓN REFERENCIA: ${ctx.solution}\n\nCÓDIGO DEL ALUMNO:\n${code}\n\nEvalúa si funciona. Si hay error, explícalo de forma muy simple.`}]})});
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`Error ${r.status}`);}
+const d=await r.json(),t=d.choices[0].message.content.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre>$2</pre>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+fb.innerHTML=`<div class="ai-badge">🤖 ${m}</div>${t}`;
+}catch(e){fb.className='feedback incorrect';fb.innerHTML=`❌ ${e.message}`;}
+finally{btn.classList.remove('loading');btn.disabled=false;}}
+
+// ============================================================
+// CHAT
+// ============================================================
+if(!window.chatHistories)window.chatHistories={};
+
+function toggleChat(i){
+const body=document.getElementById(`cb-${i}`);
+const toggle=document.getElementById(`ct-${i}`);
+body.classList.toggle('open');
+toggle.classList.toggle('open');
+}
+
+async function sendChat(i){
+const k=document.getElementById('apiKeyInput').value.trim(),m=document.getElementById('modelSelect').value;
+const input=document.getElementById(`ci-${i}`);
+const msgs=document.getElementById(`cm-${i}`);
+const btn=document.getElementById(`cs-${i}`);
+const q=input.value.trim();
+const l=L[i];
+
+if(!q)return;
+if(!k||!k.startsWith('sk-')){
+msgs.innerHTML+=`<div class="chat-msg ai">❌ Guarda tu API key de OpenAI arriba.</div>`;
+msgs.scrollTop=msgs.scrollHeight;return;}
+
+// Add user message
+msgs.innerHTML+=`<div class="chat-msg user">${q.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+input.value='';
+msgs.innerHTML+=`<div class="chat-msg ai typing" id="typing-${i}">Pensando...</div>`;
+msgs.scrollTop=msgs.scrollHeight;
+btn.disabled=true;
+
+// Build chat history
+if(!chatHistories[i])chatHistories[i]=[];
+chatHistories[i].push({role:'user',content:q});
+
+try{
+const sysPrompt=`Eres un tutor de JavaScript para n8n. El alumno está en la lección "${l.title}" que trata sobre: ${l.desc}.
+
+REGLAS:
+- SIEMPRE en español
+- Respuestas CORTAS (máx 4-6 líneas) — es un chat, no un ensayo
+- Solo responde sobre el tema de ESTA lección: ${l.exercise?l.exercise.aiContext:'conceptos de la introducción'}
+- Si pregunta algo de otra lección, dile que eso lo verá más adelante
+- Usa ejemplos de código cortos cuando sea útil
+- Sé directo, amigable y paciente — el alumno es principiante
+- Si no entiende algo, explícalo con una analogía simple
+- NO le des respuestas a los ejercicios directamente, guíalo`;
+
+const messages=[{role:'system',content:sysPrompt},...chatHistories[i].slice(-10)];
+
+const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},body:JSON.stringify({model:m,max_tokens:400,temperature:.5,messages})});
+
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`Error ${r.status}`);}
+const d=await r.json();
+const reply=d.choices[0].message.content;
+chatHistories[i].push({role:'assistant',content:reply});
+
+const typing=document.getElementById(`typing-${i}`);
+if(typing)typing.remove();
+
+const formatted=reply.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre>$2</pre>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+msgs.innerHTML+=`<div class="chat-msg ai">${formatted}</div>`;
+}catch(e){
+const typing=document.getElementById(`typing-${i}`);
+if(typing)typing.remove();
+msgs.innerHTML+=`<div class="chat-msg ai">❌ ${e.message}</div>`;
+}finally{btn.disabled=false;msgs.scrollTop=msgs.scrollHeight;}}
+
+// ============================================================
+// EXAM
+// ============================================================
+let examQuestions=[];
+let examAnswers={};
+let examStarted=false;
+
+function renderExam(i){
+const c=document.getElementById('lc');
+if(!examStarted){
+c.innerHTML=`<div class="lesson active">
+<div class="lesson-header"><div class="lesson-number" style="color:var(--yellow)">EXAMEN FINAL</div>
+<h2>🎓 Evaluación de nivel</h2>
+<p class="lesson-desc">La IA te va a generar <strong>5 preguntas</strong> que cubren todo el temario. Sin pistas, sin soluciones, sin ayuda. Solo tú y tu conocimiento. Al final, la IA te evalúa con nota y feedback detallado.</p></div>
+<div class="concept"><h3>⚠️ Reglas del examen</h3><p>
+• <strong>No hay botón de pista ni solución</strong><br>
+• <strong>No puedes volver atrás</strong> una vez empiezas<br>
+• <strong>5 preguntas</strong> generadas por IA, todas diferentes<br>
+• Al terminar, la IA te da una <strong>nota de 0 a 10</strong> con evaluación detallada<br>
+• Puedes repetir el examen las veces que quieras</p></div>
+<button class="btn-next visible" onclick="startExam(${i})" style="background:linear-gradient(135deg,var(--yellow),#f59e0b);color:#000">🚀 Empezar examen</button>
+</div>`;
+return;}
+renderExamQuestions(i);
+}
+
+async function startExam(i){
+const k=document.getElementById('apiKeyInput').value.trim(),m=document.getElementById('modelSelect').value;
+if(!k||!k.startsWith('sk-')){alert('Guarda tu API key de OpenAI primero.');return;}
+const c=document.getElementById('lc');
+c.innerHTML=`<div class="lesson active"><div class="lesson-header"><div class="lesson-number" style="color:var(--yellow)">EXAMEN FINAL</div><h2>🎓 Generando preguntas...</h2><p class="lesson-desc">La IA está preparando tu examen personalizado...</p></div></div>`;
+try{
+const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},body:JSON.stringify({model:m,max_tokens:1500,temperature:0.9,messages:[{role:'system',content:`Genera exactamente 5 ejercicios de JavaScript para n8n Code nodes. Cada ejercicio debe cubrir un tema DIFERENTE de estos: variables/strings, números/operaciones, condicionales/ternarios, arrays/map/filter, objetos/JSON, try/catch, fechas, async/await, $input y return de n8n, múltiples items.
+
+RESPONDE SOLO con un JSON array así (sin markdown, sin backticks):
+[{"q":"descripción del ejercicio con datos concretos","topic":"tema que evalúa","startCode":"// comentario guía"},{"q":"...","topic":"...","startCode":"..."},...]
+
+REGLAS:
+- SIEMPRE en español
+- 5 ejercicios, cada uno de un tema DISTINTO
+- Dificultad media-alta (nivel de alguien que completó 14 lecciones)
+- Orientados a uso REAL en n8n Code nodes
+- Datos concretos en cada ejercicio (nombres, números, escenarios específicos)
+- startCode es solo un comentario, NUNCA la solución`},{role:'user',content:'Genera 5 ejercicios de examen.'}]})});
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`Error ${r.status}`);}
+const d=await r.json();
+let raw=d.choices[0].message.content.trim().replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+examQuestions=JSON.parse(raw);
+examAnswers={};
+examStarted=true;
+renderExamQuestions(i);
+}catch(e){c.innerHTML=`<div class="lesson active"><div class="concept"><h3>❌ Error</h3><p>${e.message}</p><button class="btn btn-check" onclick="renderExam(${i})" style="margin-top:1rem">Reintentar</button></div></div>`;}}
+
+function renderExamQuestions(i){
+const c=document.getElementById('lc');
+let h=`<div class="lesson active">
+<div class="lesson-header"><div class="lesson-number" style="color:var(--yellow)">EXAMEN FINAL</div>
+<h2>🎓 Responde las 5 preguntas</h2>
+<p class="lesson-desc">Sin ayuda. Escribe tu código y al final pulsa "Enviar examen" para que la IA te evalúe.</p></div>`;
+
+examQuestions.forEach((q,idx)=>{
+h+=`<div class="exercise" style="border-color:var(--yellow)">
+<div class="exercise-label" style="color:var(--yellow)">Pregunta ${idx+1}/5 — ${q.topic||''}</div>
+<p>${q.q}</p>
+<textarea class="code-input" id="exam-${idx}" spellcheck="false" oninput="examAnswers[${idx}]=this.value">${examAnswers[idx]||q.startCode||'// Tu código aquí\n'}</textarea>
+</div>`;});
+
+h+=`<button class="btn-next visible" id="examSubmit" onclick="submitExam(${i})" style="background:linear-gradient(135deg,var(--yellow),#f59e0b);color:#000">📝 Enviar examen</button>
+<div id="examResult"></div>
+<button class="btn-next" id="retryExam" onclick="examStarted=false;examQuestions=[];examAnswers={};renderExam(${i})" style="display:none;margin-top:.75rem;background:linear-gradient(135deg,#6366f1,#8b5cf6)">🔄 Repetir examen</button>
+</div>`;
+c.innerHTML=h;
+}
+
+async function submitExam(i){
+const k=document.getElementById('apiKeyInput').value.trim(),m=document.getElementById('modelSelect').value;
+// Collect answers
+for(let idx=0;idx<examQuestions.length;idx++){
+const ta=document.getElementById(`exam-${idx}`);
+if(ta)examAnswers[idx]=ta.value;
+}
+const btn=document.getElementById('examSubmit');
+const res=document.getElementById('examResult');
+btn.disabled=true;btn.textContent='⏳ Evaluando...';
+res.innerHTML='<div class="feedback ai-response" style="display:block;margin-top:1rem"><div class="ai-badge">🤖 IA</div> Corrigiendo tu examen... esto puede tardar unos segundos.</div>';
+
+let examData='';
+examQuestions.forEach((q,idx)=>{
+examData+=`\n--- PREGUNTA ${idx+1}: ${q.topic} ---\nEnunciado: ${q.q}\nRespuesta del alumno:\n${examAnswers[idx]||'(vacío)'}\n`;
+});
+
+try{
+const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},body:JSON.stringify({model:m,max_tokens:1500,temperature:.3,messages:[{role:'system',content:`Eres un profesor de JavaScript para n8n evaluando un examen final. 
+
+INSTRUCCIONES:
+- Evalúa CADA pregunta: ✅ correcto, ⚠️ parcial, ❌ incorrecto
+- Para cada una explica brevemente por qué (1-2 líneas)
+- Si hay error, di cuál es sin dar la solución completa
+- Al final da una NOTA de 0 a 10
+- Da una evaluación general del nivel (3-4 líneas): fortalezas, debilidades, qué debería repasar
+- SIEMPRE en español
+- Sé justo pero exigente — es un examen final
+- La solución NO tiene que seguir un patrón exacto, solo funcionar correctamente
+- Formato claro con separadores entre preguntas`},{role:'user',content:`EXAMEN FINAL DE JAVASCRIPT PARA N8N\n${examData}\n\nCorrige y da nota.`}]})});
+if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`Error ${r.status}`);}
+const d=await r.json();
+const t=d.choices[0].message.content.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre>$2</pre>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+res.innerHTML=`<div class="feedback ai-response" style="display:block;margin-top:1rem"><div class="ai-badge">🤖 RESULTADO — ${m}</div>${t}</div>`;
+btn.style.display='none';
+document.getElementById('retryExam').style.display='block';
+// Check if passed (7+)
+const nota=d.choices[0].message.content.match(/(\d+(?:[.,]\d+)?)\s*\/\s*10/);
+if(nota&&parseFloat(nota[1].replace(',','.'))>=7){markD(i);}
+}catch(e){res.innerHTML=`<div class="feedback incorrect" style="display:block;margin-top:1rem">❌ ${e.message}</div>`;btn.disabled=false;btn.textContent='📝 Enviar examen';}}
+
+function next(){cur++;if(cur>=L.length){rL(null);rNav();saveS();return;}go(cur);}
+function go(i){cur=i;rNav();rL(i);saveS();window.scrollTo({top:0,behavior:'smooth'});}
+function updP(){const c=done.size,t=L.length;document.getElementById('progressCount').textContent=`${c}/${t}`;document.getElementById('progressFill').style.width=`${(c/t)*100}%`;}
+
+loadS();rNav();rL(cur);updP();
+</script>
+</body>
+</html>
